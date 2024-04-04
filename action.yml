@@ -21,7 +21,6 @@ runs:
             [ZoeElizabeth]=zoe@satel.ca
             [shallow-and-limited]=alex@satel.ca
             [CaseyQWood]=casey@satel.ca
-            [rahulpatidar0191]=rahul@satel.ca
         )
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
