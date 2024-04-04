@@ -29,6 +29,7 @@ runs:
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
+      shell: bash    
 
     - name: Find Slack user
       id: find-slack-user
@@ -37,7 +38,6 @@ runs:
         slack-token: ${{ inputs.SLACK_API_TOKEN }}
         email: ${{ env.slack_user_email }}
         include-at-symbol: true
-      shell: bash
 
     - name: Get PR comment URL
       id: get-comment
