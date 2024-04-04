@@ -42,7 +42,7 @@ runs:
       
     - name: Find Slack user
       id: find-slack-user
-      if: ${{ env.slack_user_email_found }} == 'true'
+      if: ${{ env.slack_user_email_found }} != 'false'
       uses: scribd/find-slack-user-action@v1.0.4
       with:
         slack-token: ${{ inputs.SLACK_API_TOKEN }}
@@ -50,7 +50,7 @@ runs:
         include-at-symbol: true
 
     - name: Get PR comment URL
-      if: ${{ env.slack_user_email_found }} == 'true'
+      if: ${{ env.slack_user_email_found }} != 'false'
       id: get-comment
       env:
         GH_TOKEN: ${{ github.token }}
@@ -71,7 +71,7 @@ runs:
       shell: bash
 
     - name: Slack notification
-      if: ${{ env.slack_user_email_found }} == 'true'
+      if: ${{ env.slack_user_email_found }} != 'false'
       uses: 8398a7/action-slack@v3
       with:
         status: custom
