@@ -14,8 +14,8 @@ runs:
   steps:
     - name: Find slack user email
       run: |
-        github_username=${{ github.event.pull_request.user.login }}
-    
+        github_username=${{ github.event.pull_request.user.login }} ${{ github.event.issue.user.login }}  #only value is accessible at a time
+     
         # Define mapping for frontend devs
         declare -A mapping=(
             [ZoeElizabeth]=zoe@satel.ca
