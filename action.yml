@@ -1,0 +1,80 @@
+name: Satel PR slack notifier
+description: Notify devs on slack about the comments on their PR
+
+inputs:
+  github_username:
+    description: Provides PR's author name
+    required: false
+  SLACK_API_TOKEN:
+    description: Name of the github organization
+    required: false
+  SLACK_WEBHOOK_URL:
+    description: Number of times a PR build has ran
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Find slack user email
+      run: |
+        github_username= ${{ github.event.pull_request.user.login }}
+    
+        # Define mapping for frontend devs
+        declare -A mapping=(
+            [ZoeElizabeth]=zoe@satel.ca
+            [shallow-and-limited]=alex@satel.ca
+            [CaseyQWood]=casey@satel.ca
+        )
+        
+        # Get Slack username
+        slack_user_email=${mapping[$github_username]:-Unknown}
+        echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
+
+    - name: Find Slack user
+      id: find-slack-user
+      uses: scribd/find-slack-user-action@v1.0.4
+      with:
+        slack-token: ${{ inputs.SLACK_API_TOKEN }}
+        email: ${{ env.slack_user_email }}
+        include-at-symbol: true
+      shell: bash
+
+    - name: Get PR comment URL
+      id: get-comment
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if [ "${{ github.event_name }}" == "issue_comment" ]; then
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          event_name='issues'
+        else
+          ISSUE_NUMBER="${{ github.event.pull_request.number }}"
+          event_name='pulls'
+        fi
+        
+        last_comment_url=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].html_url')
+        echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
+      shell: bash  
+        
+    - name: Slack notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: custom
+        custom_payload: |
+          {
+              "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Hi, ${{ env.slack_user_email }} there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
+                }
+              }
+            ]
+          }
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
+      if: always() # Pick up events even if the job fails or is canceled.  
