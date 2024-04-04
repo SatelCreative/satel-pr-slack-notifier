@@ -28,9 +28,10 @@ runs:
         
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
-        if [ $slack_user_email == "Unknown" ]; then
+        if [ "$slack_user_email" == "Unknown" ]; then
           exit 0
         fi
+
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
 
       shell: bash    
