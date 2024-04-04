@@ -42,7 +42,6 @@ runs:
 
     - name: Find Slack user
       if: ${{ failure() }}
-      id: find-slack-user
       uses: scribd/find-slack-user-action@v1.0.4
       with:
         slack-token: ${{ inputs.SLACK_API_TOKEN }}
