@@ -38,6 +38,7 @@ runs:
 
     - name: Print debug
       run: ${{ env.slack_user_email_found }} 
+      shell: bash
       
     - name: Find Slack user
       id: find-slack-user
