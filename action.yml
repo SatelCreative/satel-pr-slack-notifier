@@ -21,7 +21,6 @@ runs:
             [ZoeElizabeth]=zoe@satel.ca
             [shallow-and-limited]=alex@satel.ca
             [CaseyQWood]=casey@satel.ca
-            [rahulpatidar0191]=rahul@satel.ca
         )
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
@@ -31,7 +30,7 @@ runs:
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
       shell: bash    
       
-    - name: Find Slack user
+    - name: Find Slack user based on the emails   
       id: find-slack-user
       if: ${{ env.slack_user_email_found == 'true' }}
       uses: scribd/find-slack-user-action@v1.0.4
