@@ -2,15 +2,12 @@ name: Satel PR slack notifier
 description: Notify devs on slack about the comments on their PR
 
 inputs:
-  github_username:
-    description: Provides PR's author name
-    required: false
   SLACK_API_TOKEN:
-    description: Name of the github organization
-    required: false
+    description: Slack token with permission users:read.email
+    required: true
   SLACK_WEBHOOK_URL:
-    description: Number of times a PR build has ran
-    required: false
+    description: Webhook for the slack app
+    required: true
 
 runs:
   using: "composite"
@@ -26,7 +23,6 @@ runs:
             [shallow-and-limited]=alex@satel.ca
             [CaseyQWood]=casey@satel.ca
         )
-        
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
         echo "$slack_user_email"
@@ -36,7 +32,6 @@ runs:
         else
           echo "slack_user_email_found=true" >> $GITHUB_ENV
         fi
-
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
       shell: bash    
 
@@ -88,4 +83,3 @@ runs:
           }
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
-      #if: always() # Pick up events even if the job fails or is canceled.
