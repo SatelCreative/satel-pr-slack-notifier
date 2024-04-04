@@ -13,7 +13,6 @@ runs:
   using: "composite"
   steps:
     - name: Find slack user email
-      id: find-slack-user
       run: |
         github_username=${{ github.event.pull_request.user.login }}
     
@@ -39,6 +38,7 @@ runs:
       shell: bash    
 
     - name: Find Slack user
+      id: find-slack-user
       if: ${{ env.slack_user_email_found }} == 'true'
       uses: scribd/find-slack-user-action@v1.0.4
       with:
@@ -66,7 +66,7 @@ runs:
             "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].html_url')
         echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
       shell: bash
-        
+
     - name: Slack notification
       if: ${{ env.slack_user_email_found }} == 'true'
       uses: 8398a7/action-slack@v3
@@ -79,7 +79,7 @@ runs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "Hi, ${{ env.slack_user_email }} there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
+                  "text": "Hi, ${{ steps.find-slack-user.outputs.username }} there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
                 }
               }
             ]
