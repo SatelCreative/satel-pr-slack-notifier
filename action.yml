@@ -36,6 +36,9 @@ runs:
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
       shell: bash    
 
+    - name: Print debug
+      run: ${{ env.slack_user_email_found }} 
+      
     - name: Find Slack user
       id: find-slack-user
       if: ${{ env.slack_user_email_found }} == 'true'
