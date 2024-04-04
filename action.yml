@@ -31,15 +31,13 @@ runs:
         slack_user_email=${mapping[$github_username]:-Unknown}
         echo "$slack_user_email"
         if [ "$slack_user_email" == "Unknown" ]; then
-           echo "slack_user_email_found=false" >> $GITHUB_ENV
-          echo "::set-output name=slack_user_email_found::false"
+          echo "slack_user_email_found=false" >> $GITHUB_ENV
           exit 0
         else
-          echo "slack_user_email_found=false" >> $GITHUB_ENV
+          echo "slack_user_email_found=true" >> $GITHUB_ENV
         fi
 
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
-
       shell: bash    
 
     - name: Find Slack user
@@ -91,4 +89,4 @@ runs:
           }
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
-      if: always() # Pick up events even if the job fails or is canceled.
+      #if: always() # Pick up events even if the job fails or is canceled.
