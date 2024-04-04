@@ -16,6 +16,7 @@ runs:
   using: "composite"
   steps:
     - name: Find slack user email
+      id: find-email
       run: |
         github_username=${{ github.event.pull_request.user.login }}
     
@@ -25,19 +26,18 @@ runs:
             [shallow-and-limited]=alex@satel.ca
             [CaseyQWood]=casey@satel.ca
         )
-        
         # Get Slack username
         slack_user_email=${mapping[$github_username]:-Unknown}
+        echo "$slack_user_email"
         if [ "$slack_user_email" == "Unknown" ]; then
           exit 0
         fi
-
         echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
-
       shell: bash    
 
     - name: Find Slack user
       id: find-slack-user
+      needs: find-email
       uses: scribd/find-slack-user-action@v1.0.4
       with:
         slack-token: ${{ inputs.SLACK_API_TOKEN }}
@@ -45,6 +45,7 @@ runs:
         include-at-symbol: true
 
     - name: Get PR comment URL
+      needs: find-slack-user
       id: get-comment
       env:
         GH_TOKEN: ${{ github.token }}
@@ -65,6 +66,7 @@ runs:
       shell: bash  
         
     - name: Slack notification
+      needs: get-comment
       uses: 8398a7/action-slack@v3
       with:
         status: custom
