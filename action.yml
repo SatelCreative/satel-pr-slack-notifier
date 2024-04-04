@@ -39,7 +39,8 @@ runs:
       shell: bash    
 
     - name: Find Slack user
-      if: ${{ failure() }}
+      if: ${{ env.slack_user_email_found }} == 'true'
+      id: find-slack-user
       uses: scribd/find-slack-user-action@v1.0.4
       with:
         slack-token: ${{ inputs.SLACK_API_TOKEN }}
@@ -47,7 +48,7 @@ runs:
         include-at-symbol: true
 
     - name: Get PR comment URL
-      if: ${{ failure() }}
+      if: ${{ env.slack_user_email_found }} == 'true'
       id: get-comment
       env:
         GH_TOKEN: ${{ github.token }}
@@ -65,10 +66,9 @@ runs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].html_url')
         echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
-      shell: bash  
-        
+
     - name: Slack notification
-      if: ${{ failure() }}
+      if: ${{ env.slack_user_email_found }} == 'true'
       uses: 8398a7/action-slack@v3
       with:
         status: custom
