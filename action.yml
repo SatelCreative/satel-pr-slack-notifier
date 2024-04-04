@@ -12,9 +12,6 @@ inputs:
     description: Number of times a PR build has ran
     required: false
 
-outputs:
-  slack_user_email_found: ${{ steps.find-slack-user.outputs.slack_user_email_found }}
-
 runs:
   using: "composite"
   steps:
