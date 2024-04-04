@@ -72,7 +72,7 @@ runs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "Hi, ${{ steps.find-slack-user.outputs.username }} there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
+                  "text": "Hi ${{ steps.find-slack-user.outputs.username }}, there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
                 }
               }
             ]
