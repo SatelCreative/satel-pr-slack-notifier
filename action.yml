@@ -11,95 +11,95 @@ inputs:
     
 runs:
   using: "composite"
-      steps:
-      - name: Check event type and set variables
-        id: check_event_type
-        run: |
-          event_type="${{ github.event_name }}"
-          if [ "$event_type" == "issue_comment" ]; then
-            issue_number="${{ github.event.issue.number }}"
-            event_name='issues'
-            username="${{ github.event.issue.user.login }}"
-          else
-            issue_number="${{ github.event.pull_request.number }}"
-            event_name='pulls'
-            username="${{ github.event.pull_request.user.login }}"
-          fi
-          echo "issue_number=$issue_number" >> $GITHUB_ENV
-          echo "event_name=$event_name" >> $GITHUB_ENV
-          echo "username=$username" >> $GITHUB_ENV
-        shell: bash
+  steps:
+  - name: Check event type and set variables
+    id: check_event_type
+    run: |
+      event_type="${{ github.event_name }}"
+      if [ "$event_type" == "issue_comment" ]; then
+        issue_number="${{ github.event.issue.number }}"
+        event_name='issues'
+        username="${{ github.event.issue.user.login }}"
+      else
+        issue_number="${{ github.event.pull_request.number }}"
+        event_name='pulls'
+        username="${{ github.event.pull_request.user.login }}"
+      fi
+      echo "issue_number=$issue_number" >> $GITHUB_ENV
+      echo "event_name=$event_name" >> $GITHUB_ENV
+      echo "username=$username" >> $GITHUB_ENV
+    shell: bash
 
-      - name: Check for comment author
-        id: check_comment_author
-        run: |
-          last_comment_author=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/repos/${{ github.repository }}/${{ env.event_name }}/${{ env.issue_number }}/comments" --jq '.[-1].user.login')
-          echo "last_comment_author=$last_comment_author" >> $GITHUB_ENV
-          if [ "${{ env.username }}" != "$last_comment_author" ]; then
-            echo "slack_trigger=true" >> $GITHUB_ENV
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
+  - name: Check for comment author
+    id: check_comment_author
+    run: |
+      last_comment_author=$(gh api \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "/repos/${{ github.repository }}/${{ env.event_name }}/${{ env.issue_number }}/comments" --jq '.[-1].user.login')
+      echo "last_comment_author=$last_comment_author" >> $GITHUB_ENV
+      if [ "${{ env.username }}" != "$last_comment_author" ]; then
+        echo "slack_trigger=true" >> $GITHUB_ENV
+      fi
+    env:
+      GH_TOKEN: ${{ github.token }}
+    shell: bash
 
-      - name: Find slack user email
-        if: env.slack_trigger == 'true'
-        id: find_slack_user_email
-        run: |
-          # Define mapping for frontend devs
-          declare -A mapping=(
-              [ZoeElizabeth]=zoe@satel.ca
-              [shallow-and-limited]=alex@satel.ca
-              [CaseyQWood]=casey@satel.ca
-          )
-          github_username="${{ env.username }}"
-          slack_user_email=${mapping[$github_username]:-Unknown}
-          if [ "$slack_user_email" != "Unknown" ]; then
-            echo "slack_user_email_found=true" >> $GITHUB_ENV
-          fi
-        shell: bash
+  - name: Find slack user email
+    if: env.slack_trigger == 'true'
+    id: find_slack_user_email
+    run: |
+      # Define mapping for frontend devs
+      declare -A mapping=(
+          [ZoeElizabeth]=zoe@satel.ca
+          [shallow-and-limited]=alex@satel.ca
+          [CaseyQWood]=casey@satel.ca
+      )
+      github_username="${{ env.username }}"
+      slack_user_email=${mapping[$github_username]:-Unknown}
+      if [ "$slack_user_email" != "Unknown" ]; then
+        echo "slack_user_email_found=true" >> $GITHUB_ENV
+      fi
+    shell: bash
 
-      - name: Find Slack user based on the emails
-        if: env.slack_user_email_found == 'true'
-        id: find_slack_user
-        uses: scribd/find-slack-user-action@v1.0.4
-        with:
-          slack-token: ${{ inputs.SLACK_API_TOKEN }}
-          email: ${{ env.slack_user_email }}
-          include-at-symbol: true
+  - name: Find Slack user based on the emails
+    if: env.slack_user_email_found == 'true'
+    id: find_slack_user
+    uses: scribd/find-slack-user-action@v1.0.4
+    with:
+      slack-token: ${{ inputs.SLACK_API_TOKEN }}
+      email: ${{ env.slack_user_email }}
+      include-at-symbol: true
 
-      - name: Get PR comment URL
-        if: env.slack_user_email_found == 'true'
-        id: get_comment
-        run: |
-          last_comment_url=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "/repos/${{ github.repository }}/${{ env.event_name }}/${{ env.issue_number }}/comments" --jq '.[-1].html_url')
-          echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
+  - name: Get PR comment URL
+    if: env.slack_user_email_found == 'true'
+    id: get_comment
+    run: |
+      last_comment_url=$(gh api \
+        -H "Accept: application/vnd.github+json" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "/repos/${{ github.repository }}/${{ env.event_name }}/${{ env.issue_number }}/comments" --jq '.[-1].html_url')
+      echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
+    env:
+      GH_TOKEN: ${{ github.token }}
+    shell: bash
 
-      - name: Slack notification
-        if: env.slack_user_email_found == 'true'
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
+  - name: Slack notification
+    if: env.slack_user_email_found == 'true'
+    uses: 8398a7/action-slack@v3
+    with:
+      status: custom
+      custom_payload: |
+        {
+          "blocks": [
             {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Hi ${{ steps.find_slack_user.outputs.username }}, there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
-                  }
-                }
-              ]
+              "type": "section",
+              "text": {
+                "type": "mrkdwn",
+                "text": "Hi ${{ steps.find_slack_user.outputs.username }}, there's a comment on your PR. Please review it. Here's the <${{ env.last_comment_url }}|link>"
+              }
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
+          ]
+        }
+    env:
+      SLACK_WEBHOOK_URL: ${{ inputs.SLACK_WEBHOOK_URL }}
