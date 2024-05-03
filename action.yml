@@ -29,13 +29,14 @@ runs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].user.login')
         echo "last_comment_author=$last_comment_author" 
+        echo "github_username=$github_username"
         if [ "$github_username" != "$last_comment_author" ]; then
           echo "slack_trigger=true" >> $GITHUB_ENV       
         fi
       shell: bash
       
     - name: Find slack user email
-      if: ${{ env.skip_slack_trigger == 'true' }}
+      if: ${{ env.slack_trigger == 'true' }}
       run: |
         # only one of this value is accessible at a time, issue or pr review
         github_username=${{ github.event.pull_request.user.login }}${{ github.event.issue.user.login }}  
