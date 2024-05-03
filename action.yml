@@ -56,9 +56,12 @@ runs:
           [CaseyQWood]=casey@satel.ca
       )
       github_username="${{ env.username }}"
+      echo "github_username" $github_username
       slack_user_email=${mapping[$github_username]:-Unknown}
+      echo "slack_user_email" $slack_user_email
       if [ "$slack_user_email" != "Unknown" ]; then
         echo "slack_user_email_found=true" >> $GITHUB_ENV
+        echo "slack_user_email=$slack_user_email" >> $GITHUB_ENV
       fi
     shell: bash
 
