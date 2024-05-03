@@ -12,8 +12,17 @@ inputs:
 runs:
   using: "composite"
   steps:      
-    - name: Check for cooment author
-      run: | 
+    - name: Check for comment author
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if [ "${{ github.event_name }}" == "issue_comment" ]; then
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          event_name='issues'
+        else
+          ISSUE_NUMBER="${{ github.event.pull_request.number }}" # For PR review comments 
+          event_name='pulls'
+        fi
         github_username=${{ github.event.pull_request.user.login }}${{ github.event.issue.user.login }}  
         last_comment_author=$(gh api \
             -H "Accept: application/vnd.github+json" \
