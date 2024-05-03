@@ -56,7 +56,7 @@ runs:
           ISSUE_NUMBER="${{ github.event.issue.number }}"
           event_name='issues'
         else
-          ISSUE_NUMBER="${{ github.event.pull_request.number }}"
+          ISSUE_NUMBER="${{ github.event.pull_request.number }}" # For PR review comments 
           event_name='pulls'
         fi
         
@@ -66,6 +66,13 @@ runs:
             "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].html_url')
         echo "last_comment_url=$last_comment_url"    
         echo "last_comment_url=$last_comment_url" >> $GITHUB_ENV
+        
+        last_comment_author=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/$event_name/$ISSUE_NUMBER/comments" --jq '.[-1].user.login')
+        echo "last_comment_author=$last_comment_author"    
+        echo "last_comment_author=$last_comment_author" >> $GITHUB_ENV
       shell: bash
 
     # - name: Slack notification
