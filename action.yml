@@ -68,7 +68,7 @@ runs:
   - name: Find Slack user based on the emails
     if: env.slack_user_email_found == 'true'
     id: find_slack_user
-    uses: scribd/find-slack-user-action@v1.0.4
+    uses: scribd/find-slack-user-action@v1.0.5
     with:
       slack-token: ${{ inputs.SLACK_API_TOKEN }}
       email: ${{ env.slack_user_email }}
@@ -89,7 +89,7 @@ runs:
 
   - name: Slack notification
     if: env.slack_user_email_found == 'true'
-    uses: 8398a7/action-slack@v3
+    uses: 8398a7/action-slack@v3.19.0
     with:
       status: custom
       custom_payload: |
